@@ -15,9 +15,11 @@ func NewMySqlDatabase(cfg mysql.Config) (*sql.DB, error) {
 		
 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, err
+	er:=db.Ping()
+	if er!=nil{
+		log.Fatal("Error connecting to database: ", er)
 	}
+	log.Println("Connected to database")
 
 	return db, nil
 }

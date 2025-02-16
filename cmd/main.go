@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/ecom-api/cmd/api"
+	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
 	"github.com/go-sql-driver/mysql"
 );
@@ -11,10 +12,10 @@ import (
 func main(){
 	
 	db,err:=db.NewMySqlDatabase(mysql.Config{
-		User: "root",
-		Passwd: "",
-		Addr: "localhost:3306",
-		DBName: "go_ecom_api",
+		User: config.Envs.DBUser,
+		Passwd: config.Envs.DBPass,
+		Addr: config.Envs.DBAddress,
+		DBName: config.Envs.DBName,
 		Net: "tcp",
 		AllowNativePasswords: true,
 		ParseTime: true,

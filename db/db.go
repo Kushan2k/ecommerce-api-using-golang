@@ -1,25 +1,25 @@
 package db
 
 import (
-	"database/sql"
-	"log"
+	"fmt"
 
-	"github.com/go-sql-driver/mysql"
+	"github.com/ecom-api/models"
+	Mysql "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-func NewMySqlDatabase(cfg mysql.Config) (*sql.DB, error) {
-	
-	db, err := sql.Open("mysql", cfg.FormatDSN())
-	if err != nil {
-		log.Fatal(err)
-		
+func NewMySqlDatabase(cfg Mysql.Config) (*gorm.DB, error) {
+
+	fmt.Println(cfg.FormatDSN())
+
+	db,err:=gorm.Open(mysql.Open(cfg.FormatDSN()))
+
+	if err!=nil{
+		return nil,err
 	}
 
-	er:=db.Ping()
-	if er!=nil{
-		log.Fatal("Error connecting to database: ", er)
-	}
-	log.Println("Connected to database")
-
+	//migration of the models
+	db.AutoMigrate(&models.User{})
 	return db, nil
 }

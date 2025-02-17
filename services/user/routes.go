@@ -4,22 +4,24 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ecom-api/models"
 	"github.com/ecom-api/services/auth"
 	"github.com/ecom-api/types"
 	"github.com/ecom-api/utils"
 	"github.com/gorilla/mux"
+	"gorm.io/gorm"
 )
 
 
 type UserService struct {
-	store types.UserStore
+	db *gorm.DB
 }
 
 
 
-func NewUserService(userStore types.UserStore) *UserService {
+func NewUserService(database *gorm.DB) *UserService {
 	return &UserService{
-		store: userStore,
+		db: database,
 	}
 }
 
@@ -33,6 +35,8 @@ func (s *UserService) RegisterRoutes(router *mux.Router) {
 
 func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	
+	fmt.Println("register user")
+	
 	var payload types.RegisterBodyType
 
 	err:=utils.ParseJSON(r,payload)
@@ -42,10 +46,16 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	
+	var u models.User
+	results:=s.db.Where("email = ?", payload.Email).First(&u)
+	// _,err=s.store.GetUserByEmail(payload.Email)
 
-	_,err=s.store.GetUserByEmail(payload.Email)
+	if results.Error==nil {
+		utils.WriteError(w,http.StatusInternalServerError,results.Error)
+		return
+	}
 
-	if err==nil{
+	if results.RowsAffected !=0{
 		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user already exists with email %s",payload.Email))
 		return
 	}
@@ -58,19 +68,30 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err=s.store.CreateUser(&types.User{
+	
+	s.db.Create(&models.User{
 		Email:payload.Email,
 		Password:passwordhash,
 		FirstName: payload.FistName,
 		LastName: payload.LastName,
 	})
 
-	if err!=nil{
-		utils.WriteError(w,http.StatusInternalServerError,err)
-		return
-	}
 
-	utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",payload.Email))
+	utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",passwordhash))
+
+	// err=s.store.CreateUser(&types.User{
+	// 	Email:payload.Email,
+	// 	Password:passwordhash,
+	// 	FirstName: payload.FistName,
+	// 	LastName: payload.LastName,
+	// })
+
+	// if err!=nil{
+	// 	utils.WriteError(w,http.StatusInternalServerError,err)
+	// 	return
+	// }
+
+	// utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",payload.Email))
 
 
 }

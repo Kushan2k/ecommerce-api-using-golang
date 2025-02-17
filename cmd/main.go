@@ -6,12 +6,14 @@ import (
 	"github.com/ecom-api/cmd/api"
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
-	"github.com/go-sql-driver/mysql"
+
+	// "gorm.io/driver/mysql"
+	Mysql "github.com/go-sql-driver/mysql"
 );
 
 func main(){
 	
-	db,err:=db.NewMySqlDatabase(mysql.Config{
+	db,err:=db.NewMySqlDatabase(Mysql.Config{
 		User: config.Envs.DBUser,
 		Passwd: config.Envs.DBPass,
 		Addr: config.Envs.DBAddress,

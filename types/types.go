@@ -13,6 +13,7 @@ type RegisterBodyType struct {
 
 type UserStore interface {
 	GetUserByEmail(email string) (*User,error)
+	CreateUser(*User) error
 }
 
 

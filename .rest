@@ -1,3 +1,14 @@
 ###
 
 GET http://localhost:8080/api/v1/test
+
+###
+POST http://localhost:8080/api/v1/register
+Content-Type: application/json
+
+{
+  "firstname":"kushan",
+  "lastname":"Gayantha",
+  "email":"ksuan123@gmail.com",
+  "password":"12345678"
+}

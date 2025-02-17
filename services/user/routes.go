@@ -9,24 +9,24 @@ import (
 )
 
 
-type UserService struct {}
+type UserService struct {
+	store types.UserStore
+}
 
 
 
-func NewUserService() *UserService {
-	return &UserService{}
+func NewUserService(userStore types.UserStore) *UserService {
+	return &UserService{
+		store: userStore,
+	}
 }
 
 
 func (s *UserService) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/test",s.Test).Methods("GET")
 	router.HandleFunc("/register",s.RegisterUser).Methods("POST")
 }
 
-func (s *UserService) Test(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type","application/json")
-	w.Write([]byte(`{"message":"Hello World"}`))
-}
+
 
 
 func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +38,8 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	if err!=nil{
 		utils.WriteError(w,http.StatusBadRequest,err)
 	}
+
+	
 
 	utils.WriteJSON(w,http.StatusOK,payload)
 

@@ -29,8 +29,10 @@ func (s *ApiServer) Run() error {
 	subRouter:=router.PathPrefix("/api/v1").Subrouter();
 	_ = subRouter;
 
-	user_router:=user.NewUserService()
-	user_router.RegisterRoutes(subRouter)
+	usestore:=user.NewStore(s.db)
+
+	user_service:=user.NewUserService(usestore)
+	user_service.RegisterRoutes(subRouter)
 	
 	log.Println("Server is running on port 8080")
 	return http.ListenAndServe(s.addr, nil);

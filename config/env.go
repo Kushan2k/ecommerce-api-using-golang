@@ -48,8 +48,8 @@ func initConfig() Config {
 		DBName: getENV("DB_NAME", "go_ecom_api"),
 
 		MailHost: getENV("MAIL_HOST", "smtp.titan.email"),
-		MailUser: getENV("MAIL_USER", "testadmin@forgear.edu.lk"),
-		MailPass: getENV("MAIL_PASS", "7>6{SW#N('> &Do"),
+		MailUser: getENV("MAIL_USER", ""),
+		MailPass: getENV("MAIL_PASS", ""),
 		MailPort: func() int {
 			port, err := strconv.Atoi(getENV("MAIL_PORT", "465"))
 			if err != nil {

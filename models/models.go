@@ -12,4 +12,7 @@ type User struct {
 	Password string `gorm:"not null"`               // Password field (hashed)
 	FirstName string `gorm:"size:100;not null"`       // First name field with max length 100
 	LastName string `gorm:"size:100;not null"`       // Last name field with max length 100
+
+	OTP int `gorm:"null"`       // OTP field with max length 6
+	Verified bool `gorm:"default:false"`       // Verified field with default value false
 }

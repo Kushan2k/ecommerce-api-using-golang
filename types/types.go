@@ -10,6 +10,11 @@ type RegisterBodyType struct {
 
 }
 
+type LoginBodyType struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
 
 type UserStore interface {
 	GetUserByEmail(email string) (*User,error)

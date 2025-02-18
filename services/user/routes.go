@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"math/rand"
+
+	"github.com/ecom-api/config"
 	"github.com/ecom-api/models"
 	"github.com/ecom-api/services/auth"
 	"github.com/ecom-api/types"
@@ -35,27 +38,27 @@ func (s *UserService) RegisterRoutes(router *mux.Router) {
 
 func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	
-	fmt.Println("register user")
-	
 	var payload types.RegisterBodyType
 
-	err:=utils.ParseJSON(r,payload)
+	err:=utils.ParseJSON(r,&payload)
 
 	if err!=nil{
 		utils.WriteError(w,http.StatusBadRequest,err)
-	}
-
-	
-	var u models.User
-	results:=s.db.Where("email = ?", payload.Email).First(&u)
-	// _,err=s.store.GetUserByEmail(payload.Email)
-
-	if results.Error==nil {
-		utils.WriteError(w,http.StatusInternalServerError,results.Error)
 		return
 	}
 
-	if results.RowsAffected !=0{
+	// fmt.Printf("payload ")
+	var u models.User
+	results:=s.db.Where("email = ?", payload.Email).First(&u)
+	
+
+	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
+    utils.WriteError(w, http.StatusInternalServerError, results.Error)
+    return
+	}
+
+	if results.RowsAffected >0{
+		// fmt.Println("user already exists")
 		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user already exists with email %s",payload.Email))
 		return
 	}
@@ -68,16 +71,36 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
-	s.db.Create(&models.User{
+	otp:=rand.Intn(900000) + 100000
+	tx:=s.db.Create(&models.User{
 		Email:payload.Email,
 		Password:passwordhash,
 		FirstName: payload.FistName,
 		LastName: payload.LastName,
+		OTP: otp,
 	})
 
+	if tx.Error != nil {
+		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
+		return
+	}
 
-	utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",passwordhash))
+	mailer:=utils.GetMailer()
+	msg:=utils.GetMessage()
+
+	
+
+	msg.SetHeader("From",config.Envs.MailUser)
+	msg.SetHeader("To",payload.Email)
+	msg.SetHeader("Subject","Welcome to Ecom API")
+	msg.SetBody("text/html",fmt.Sprintf("Hello %s, <br> Welcome to Ecom API <br/> Your OTP is %d",payload.FistName,otp))
+
+	go mailer.DialAndSend(msg)
+	
+	utils.WriteJSON(w,http.StatusCreated,map[string]string{
+		"message": fmt.Sprintf("user created with email %s", payload.Email),
+	})
+	
 
 	// err=s.store.CreateUser(&types.User{
 	// 	Email:payload.Email,
@@ -94,4 +117,48 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",payload.Email))
 
 
+}
+
+
+func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
+	
+	var payload types.LoginBodyType
+
+	err:=utils.ParseJSON(r,&payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	var u models.User
+	results:=s.db.Where("email = ?", payload.Email).First(&u)
+	
+
+	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
+		utils.WriteError(w, http.StatusInternalServerError, results.Error)
+		return
+	}
+
+	if results.RowsAffected ==0{
+		// fmt.Println("user already exists")
+		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		return
+	}
+
+	if !auth.CheckPasswordHash(payload.Password,u.Password){
+		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("password does not match"))
+		return
+	}
+
+	// token,err:=auth.GenerateToken(u.ID)
+
+	// if err!=nil{
+	// 	utils.WriteError(w,http.StatusInternalServerError,err)
+	// 	return
+	// }
+
+	// utils.WriteJSON(w,http.StatusOK,map[string]string{
+	// 	"token": token,
+	// })
 }

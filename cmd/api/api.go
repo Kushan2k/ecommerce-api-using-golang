@@ -36,5 +36,6 @@ func (s *ApiServer) Run() error {
 	user_service.RegisterRoutes(subRouter)
 	
 	log.Printf("Server is running on port %s",s.addr)
-	return http.ListenAndServe(s.addr, nil);
+	
+	return http.ListenAndServe(s.addr, subRouter);
 }

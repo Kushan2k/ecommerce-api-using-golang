@@ -1,14 +1,15 @@
 ###
 
-GET http://localhost:8080/api/v1/test
+GET http://localhost:8080/api/v1/ping
+Content-Type: application/json
 
 ###
 POST http://localhost:8080/api/v1/register
 Content-Type: application/json
 
 {
-  "firstname":"kushan",
-  "lastname":"Gayantha",
-  "email":"ksuan123@gmail.com",
+  "first_name":"kushan",
+  "last_name":"Gayantha",
+  "email":"kushangayantha001@gmail.com",
   "password":"12345678"
 }

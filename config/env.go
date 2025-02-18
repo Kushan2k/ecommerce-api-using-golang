@@ -29,16 +29,6 @@ var Envs=initConfig()
 func initConfig() Config {
 
 	godotenv.Load()
-
-	// $mail->Host       = 'smtp.titan.email'; //Set the SMTP server to send through
-  //   $mail->SMTPAuth   = true;    //Enable SMTP authentication
-  //   $mail->Username   = 'testadmin@forgear.edu.lk';  //SMTP username
-  //   $mail->Password   = "7>6{SW#N('> &Do";     //SMTP password
-  //   $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;   //Enable implicit TLS encryption
-  //   $mail->Port       = 465; 
-
-  //   //Recipients
-  //   $mail->setFrom('testadmin@forgear.edu.lk', 'Bill Remailder');
 	return Config{
 		PublicHost: getENV("PUBLIC_HOST", "localhost"),
 		Port: getENV("PORT", "8080"),

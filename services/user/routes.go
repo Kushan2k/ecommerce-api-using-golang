@@ -35,6 +35,8 @@ func NewUserService(database *gorm.DB) *UserService {
 func (s *UserService) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/register",s.RegisterUser).Methods("POST")
 	router.HandleFunc("/login",s.LoginUser).Methods("POST")
+	router.HandleFunc("/verify-account",s.veryfy_account).Methods("POST")
+	router.HandleFunc("/resend-verification-code",s.resend_verification_code).Methods("POST")
 }
 
 
@@ -175,5 +177,122 @@ func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJSON(w,http.StatusOK,map[string]string{
 		"token": token,
+	})
+}
+
+func (s *UserService) veryfy_account(w http.ResponseWriter,r *http.Request){
+	validate:=validator.New()
+	
+	var payload types.VerifyBodyType
+
+	
+
+	err:=utils.ParseJSON(r,&payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	err=validate.Struct(payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	var u models.User
+	results:=s.db.Where("email = ?", payload.Email).First(&u)
+	
+
+	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
+		utils.WriteError(w, http.StatusInternalServerError, results.Error)
+		return
+	}
+
+	if results.RowsAffected ==0{
+		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		return
+	}
+
+	if u.OTP!=payload.OTP{
+		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("OTP does not match"))
+		return
+	}
+
+	u.Verified=true
+
+	tx:=s.db.Save(&u)
+
+	if tx.Error != nil {
+		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
+		return
+	}
+
+	utils.WriteJSON(w,http.StatusOK,map[string]string{
+		"message": "account verified",
+	})
+}
+
+func (s *UserService) resend_verification_code(w http.ResponseWriter,r *http.Request){
+
+	validate:=validator.New()
+	
+	var payload types.ResendBodyType
+
+
+	err:=utils.ParseJSON(r,&payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	err=validate.Struct(payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	var u models.User
+	results:=s.db.Where("email = ?", payload.Email).First(&u)
+	
+
+	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
+		utils.WriteError(w, http.StatusInternalServerError, results.Error)
+		return
+	}
+
+	if results.RowsAffected ==0{
+		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		return
+	}
+
+	otp:=rand.Intn(900000) + 100000
+
+	u.OTP=otp
+
+	tx:=s.db.Save(&u)
+
+	if tx.Error != nil {
+		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
+		return
+	}
+
+	mailer:=utils.GetMailer()
+	msg:=utils.GetMessage()
+
+	
+
+	msg.SetHeader("From",config.Envs.MailUser)
+	msg.SetHeader("To",payload.Email)
+	msg.SetHeader("Subject","Welcome to Ecom API")
+	msg.SetBody("text/html",fmt.Sprintf("Hello %s, <br> Welcome to Ecom API <br/> Your OTP is %d",u.FirstName,otp))
+
+	go mailer.DialAndSend(msg)
+	
+	utils.WriteJSON(w,http.StatusOK,map[string]string{
+		"message": fmt.Sprintf("OTP sent to email %s", payload.Email),
 	})
 }

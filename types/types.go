@@ -15,6 +15,15 @@ type LoginBodyType struct {
 	Password string `json:"password" validate:"min=8,required"`
 }
 
+type VerifyBodyType struct {
+	Email string `json:"email" validate:"required,email"`
+	OTP int `json:"otp" validate:"required"`
+}
+
+type ResendBodyType struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
 
 type UserStore interface {
 	GetUserByEmail(email string) (*User,error)

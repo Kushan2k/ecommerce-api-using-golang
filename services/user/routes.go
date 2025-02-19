@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"math/rand"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/ecom-api/services/auth"
 	"github.com/ecom-api/types"
 	"github.com/ecom-api/utils"
+	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
@@ -31,16 +34,26 @@ func NewUserService(database *gorm.DB) *UserService {
 
 func (s *UserService) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/register",s.RegisterUser).Methods("POST")
+	router.HandleFunc("/login",s.LoginUser).Methods("POST")
 }
 
 
 
 
 func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
+
+	validate:=validator.New()
 	
 	var payload types.RegisterBodyType
 
 	err:=utils.ParseJSON(r,&payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	err=validate.Struct(payload)
 
 	if err!=nil{
 		utils.WriteError(w,http.StatusBadRequest,err)
@@ -75,7 +88,7 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	tx:=s.db.Create(&models.User{
 		Email:payload.Email,
 		Password:passwordhash,
-		FirstName: payload.FistName,
+		FirstName: payload.FirstName,
 		LastName: payload.LastName,
 		OTP: otp,
 	})
@@ -93,38 +106,33 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	msg.SetHeader("From",config.Envs.MailUser)
 	msg.SetHeader("To",payload.Email)
 	msg.SetHeader("Subject","Welcome to Ecom API")
-	msg.SetBody("text/html",fmt.Sprintf("Hello %s, <br> Welcome to Ecom API <br/> Your OTP is %d",payload.FistName,otp))
+	msg.SetBody("text/html",fmt.Sprintf("Hello %s, <br> Welcome to Ecom API <br/> Your OTP is %d",payload.FirstName,otp))
 
 	go mailer.DialAndSend(msg)
 	
 	utils.WriteJSON(w,http.StatusCreated,map[string]string{
 		"message": fmt.Sprintf("user created with email %s", payload.Email),
 	})
-	
-
-	// err=s.store.CreateUser(&types.User{
-	// 	Email:payload.Email,
-	// 	Password:passwordhash,
-	// 	FirstName: payload.FistName,
-	// 	LastName: payload.LastName,
-	// })
-
-	// if err!=nil{
-	// 	utils.WriteError(w,http.StatusInternalServerError,err)
-	// 	return
-	// }
-
-	// utils.WriteJSON(w,http.StatusCreated,fmt.Sprintf("user created with email %s",payload.Email))
 
 
 }
 
 
 func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
+	validate:=validator.New()
 	
 	var payload types.LoginBodyType
 
+	
+
 	err:=utils.ParseJSON(r,&payload)
+
+	if err!=nil{
+		utils.WriteError(w,http.StatusBadRequest,err)
+		return
+	}
+
+	err=validate.Struct(payload)
 
 	if err!=nil{
 		utils.WriteError(w,http.StatusBadRequest,err)
@@ -151,14 +159,21 @@ func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// token,err:=auth.GenerateToken(u.ID)
+	token,err:=auth.GenerateJWT( jwt.MapClaims{
+		"id": u.ID,
+		"email": u.Email,
+		"iss": "ecom-api",
+		"sub": "auth",
+		"time":time.Now().Unix(),
 
-	// if err!=nil{
-	// 	utils.WriteError(w,http.StatusInternalServerError,err)
-	// 	return
-	// }
+	})
 
-	// utils.WriteJSON(w,http.StatusOK,map[string]string{
-	// 	"token": token,
-	// })
+	if err!=nil{
+		utils.WriteError(w,http.StatusInternalServerError,err)
+		return
+	}
+
+	utils.WriteJSON(w,http.StatusOK,map[string]string{
+		"token": token,
+	})
 }

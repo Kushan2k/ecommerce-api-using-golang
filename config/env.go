@@ -14,6 +14,7 @@ type Config struct {
 	DBPass		 string
 	DBAddress	string
 	DBName		 string
+	JWT_KEY string
 
 	MailHost string
 	MailUser string
@@ -36,6 +37,7 @@ func initConfig() Config {
 		DBPass: getENV("DB_PASS", ""),
 		DBAddress: getENV("DB_ADDRESS", "localhost:3306"),
 		DBName: getENV("DB_NAME", "go_ecom_api"),
+		JWT_KEY: getENV("JWT_SECRET","123"),
 
 		MailHost: getENV("MAIL_HOST", "smtp.titan.email"),
 		MailUser: getENV("MAIL_USER", ""),

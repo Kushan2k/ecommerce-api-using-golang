@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/ecom-api/cmd/api"
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
-
-	// "gorm.io/driver/mysql"
+	"github.com/ecom-api/services/user"
 	Mysql "github.com/go-sql-driver/mysql"
+	"github.com/gofiber/fiber/v2"
 );
 
 func main(){
@@ -28,10 +27,13 @@ func main(){
 		return
 	}
 	
-	server := api.NewApiServer(":8080", db)
+	server:=fiber.New()
 
+	user_service:=user.NewUserService(db)
+	user_service.RegisterRoutes(server)
+	// server := api.NewApiServer(":8080", db)
 
-	if err:=server.Run(); err!=nil{
+	if err:=server.Listen(":8080"); err!=nil{
 		log.Fatalf("Error starting server: %s", err)
 	}
 }

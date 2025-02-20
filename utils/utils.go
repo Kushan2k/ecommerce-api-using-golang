@@ -1,29 +1,18 @@
 package utils
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 
-func ParseJSON(r *http.Request,payload any) error {
 
-	if r.Body==nil {
-		return fmt.Errorf("request body is empty")
-	}
-	return json.NewDecoder(r.Body).Decode(payload)
+func WriteJSON(c *fiber.Ctx, status int,v any) error {
+	c.Status(status)
+	c.Set("Content-Type", "application/json")
+	return c.JSON(v)
 }
 
-func WriteJSON(w http.ResponseWriter, status int,v any) error {
-	w.Header().Add("Content-Type","application/json")
-	w.WriteHeader(status)
-
-	return json.NewEncoder(w).Encode(v)
-}
-
-func WriteError(w http.ResponseWriter, status int, err error) {
+func WriteError(c *fiber.Ctx, status int, err error) error {
 	
-	
-	WriteJSON(w,status,map[string]string{"error":err.Error()})
+	return WriteJSON(c,status,map[string]string{"error":err.Error()})
 }

@@ -13,8 +13,9 @@ import (
 	"github.com/ecom-api/types"
 	"github.com/ecom-api/utils"
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/gorilla/mux"
+
 	"gorm.io/gorm"
 )
 
@@ -32,34 +33,41 @@ func NewUserService(database *gorm.DB) *UserService {
 }
 
 
-func (s *UserService) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/register",s.RegisterUser).Methods("POST")
-	router.HandleFunc("/login",s.LoginUser).Methods("POST")
-	router.HandleFunc("/verify-account",s.veryfy_account).Methods("POST")
-	router.HandleFunc("/resend-verification-code",s.resend_verification_code).Methods("POST")
+func (s *UserService) RegisterRoutes(router *fiber.App) {
+
+	router.Post("/register",s.RegisterUser)
+	router.Post("/login",s.LoginUser)
+	router.Post("/verify-account",s.veryfy_account)
+	router.Post("/resend-verification-code",s.resend_verification_code)
+
+	// router.HandleFunc("/register",s.RegisterUser).Methods("POST")
+	// router.HandleFunc("/login",s.LoginUser).Methods("POST")
+	// router.HandleFunc("/verify-account",s.veryfy_account).Methods("POST")
+	// router.HandleFunc("/resend-verification-code",s.resend_verification_code).Methods("POST")
 }
 
 
 
 
-func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
+func (s *UserService) RegisterUser(c *fiber.Ctx) error {
+
 
 	validate:=validator.New()
 	
 	var payload types.RegisterBodyType
 
-	err:=utils.ParseJSON(r,&payload)
+	err:=c.BodyParser(&payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	err=validate.Struct(payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	// fmt.Printf("payload ")
@@ -68,22 +76,22 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	
 
 	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
-    utils.WriteError(w, http.StatusInternalServerError, results.Error)
-    return
+    return utils.WriteError(c, http.StatusInternalServerError, results.Error)
+    
 	}
 
 	if results.RowsAffected >0{
 		// fmt.Println("user already exists")
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user already exists with email %s",payload.Email))
-		return
+		return utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("user already exists with email %s",payload.Email))
+		
 	}
 	var passwordhash string=""
 
 	passwordhash,err=auth.HashPassword(payload.Password)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusInternalServerError,err)
-		return
+		return utils.WriteError(c,http.StatusInternalServerError,err)
+		
 	}
 
 	otp:=rand.Intn(900000) + 100000
@@ -96,8 +104,8 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if tx.Error != nil {
-		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, tx.Error)
+		
 	}
 
 	mailer:=utils.GetMailer()
@@ -112,7 +120,7 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	go mailer.DialAndSend(msg)
 	
-	utils.WriteJSON(w,http.StatusCreated,map[string]string{
+	return utils.WriteJSON(c,http.StatusCreated,map[string]string{
 		"message": fmt.Sprintf("user created with email %s", payload.Email),
 	})
 
@@ -120,25 +128,25 @@ func (s *UserService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
+func (s *UserService) LoginUser(c *fiber.Ctx) error {
 	validate:=validator.New()
 	
 	var payload types.LoginBodyType
 
 	
 
-	err:=utils.ParseJSON(r,&payload)
+	err:=c.BodyParser(&payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	err=validate.Struct(payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	var u models.User
@@ -146,19 +154,19 @@ func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	
 
 	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
-		utils.WriteError(w, http.StatusInternalServerError, results.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, results.Error)
+		
 	}
 
 	if results.RowsAffected ==0{
 		// fmt.Println("user already exists")
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
-		return
+		return utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		
 	}
 
 	if !auth.CheckPasswordHash(payload.Password,u.Password){
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("password does not match"))
-		return
+		return utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("password does not match"))
+		
 	}
 
 	token,err:=auth.GenerateJWT( jwt.MapClaims{
@@ -171,34 +179,34 @@ func (s *UserService) LoginUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusInternalServerError,err)
-		return
+		return utils.WriteError(c,http.StatusInternalServerError,err)
+		
 	}
 
-	utils.WriteJSON(w,http.StatusOK,map[string]string{
+	return utils.WriteJSON(c,http.StatusOK,map[string]string{
 		"token": token,
 	})
 }
 
-func (s *UserService) veryfy_account(w http.ResponseWriter,r *http.Request){
+func (s *UserService) veryfy_account(c *fiber.Ctx) error{
 	validate:=validator.New()
 	
 	var payload types.VerifyBodyType
 
 	
 
-	err:=utils.ParseJSON(r,&payload)
+	err:=c.BodyParser(&payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	err=validate.Struct(payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	var u models.User
@@ -206,18 +214,18 @@ func (s *UserService) veryfy_account(w http.ResponseWriter,r *http.Request){
 	
 
 	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
-		utils.WriteError(w, http.StatusInternalServerError, results.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, results.Error)
+		
 	}
 
 	if results.RowsAffected ==0{
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
-		return
+		utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		
 	}
 
 	if u.OTP!=payload.OTP{
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("OTP does not match"))
-		return
+		return utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("OTP does not match"))
+		
 	}
 
 	u.Verified=true
@@ -225,34 +233,34 @@ func (s *UserService) veryfy_account(w http.ResponseWriter,r *http.Request){
 	tx:=s.db.Save(&u)
 
 	if tx.Error != nil {
-		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, tx.Error)
+		
 	}
 
-	utils.WriteJSON(w,http.StatusOK,map[string]string{
+	return utils.WriteJSON(c,http.StatusOK,map[string]string{
 		"message": "account verified",
 	})
 }
 
-func (s *UserService) resend_verification_code(w http.ResponseWriter,r *http.Request){
+func (s *UserService) resend_verification_code(c *fiber.Ctx) error{
 
 	validate:=validator.New()
 	
 	var payload types.ResendBodyType
 
 
-	err:=utils.ParseJSON(r,&payload)
+	err:=c.BodyParser(&payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	err=validate.Struct(payload)
 
 	if err!=nil{
-		utils.WriteError(w,http.StatusBadRequest,err)
-		return
+		return utils.WriteError(c,http.StatusBadRequest,err)
+		
 	}
 
 	var u models.User
@@ -260,13 +268,13 @@ func (s *UserService) resend_verification_code(w http.ResponseWriter,r *http.Req
 	
 
 	if results.Error != nil && results.Error != gorm.ErrRecordNotFound {
-		utils.WriteError(w, http.StatusInternalServerError, results.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, results.Error)
+		
 	}
 
 	if results.RowsAffected ==0{
-		utils.WriteError(w,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
-		return
+		return utils.WriteError(c,http.StatusBadRequest,fmt.Errorf("user does not exists with email %s",payload.Email))
+		
 	}
 
 	otp:=rand.Intn(900000) + 100000
@@ -276,8 +284,8 @@ func (s *UserService) resend_verification_code(w http.ResponseWriter,r *http.Req
 	tx:=s.db.Save(&u)
 
 	if tx.Error != nil {
-		utils.WriteError(w, http.StatusInternalServerError, tx.Error)
-		return
+		return utils.WriteError(c, http.StatusInternalServerError, tx.Error)
+		
 	}
 
 	mailer:=utils.GetMailer()
@@ -292,7 +300,7 @@ func (s *UserService) resend_verification_code(w http.ResponseWriter,r *http.Req
 
 	go mailer.DialAndSend(msg)
 	
-	utils.WriteJSON(w,http.StatusOK,map[string]string{
+	return utils.WriteJSON(c,http.StatusOK,map[string]string{
 		"message": fmt.Sprintf("OTP sent to email %s", payload.Email),
 	})
 }

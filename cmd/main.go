@@ -29,8 +29,11 @@ func main(){
 	
 	server:=fiber.New()
 
+	user_router:=server.Group("/api/v1/")
+
+
 	user_service:=user.NewUserService(db)
-	user_service.RegisterRoutes(server)
+	user_service.RegisterRoutes(user_router)
 	// server := api.NewApiServer(":8080", db)
 
 	if err:=server.Listen(":8080"); err!=nil{

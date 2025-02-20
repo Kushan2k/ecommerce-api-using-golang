@@ -33,7 +33,7 @@ func NewUserService(database *gorm.DB) *UserService {
 }
 
 
-func (s *UserService) RegisterRoutes(router *fiber.App) {
+func (s *UserService) RegisterRoutes(router fiber.Router) {
 
 	router.Post("/register",s.RegisterUser)
 	router.Post("/login",s.LoginUser)

@@ -28,10 +28,10 @@ func main(){
 	}
 	
 	server:=fiber.New()
+	api:=server.Group("/api/v1/")
 
-	user_router:=server.Group("/api/v1/")
-
-
+	//user router 
+	user_router:=api.Group("/auth/")
 	user_service:=user.NewUserService(db)
 	user_service.RegisterRoutes(user_router)
 	// server := api.NewApiServer(":8080", db)

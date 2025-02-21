@@ -5,6 +5,7 @@ import (
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
+	"github.com/ecom-api/middlewares"
 	"github.com/ecom-api/services/user"
 	Mysql "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
@@ -29,6 +30,8 @@ func main(){
 	
 	server:=fiber.New()
 	api:=server.Group("/api/v1/")
+
+	api.Use(middlewares.Is_authenticated)
 
 	//user router 
 	user_router:=api.Group("/auth/")

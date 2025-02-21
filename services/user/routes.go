@@ -170,7 +170,7 @@ func (s *UserService) LoginUser(c *fiber.Ctx) error {
 	}
 
 	token,err:=auth.GenerateJWT( jwt.MapClaims{
-		"id": u.ID,
+		"user_id": u.ID,
 		"email": u.Email,
 		"iss": "ecom-api",
 		"sub": "auth",

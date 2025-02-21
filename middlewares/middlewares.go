@@ -25,13 +25,18 @@ func  Is_authenticated(c *fiber.Ctx) error{
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
-		return config.Envs.JWT_KEY, nil
+		return []byte(config.Envs.JWT_KEY), nil
 	})
 
 	if err != nil || !token.Valid {
 		return utils.WriteError(c, fiber.StatusUnauthorized, fmt.Errorf("token invalid"))
 	}
+	fmt.Print(token)
 	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok {
+		return utils.WriteError(c, fiber.StatusUnauthorized, fmt.Errorf("faild to decode the cliams"))
+	}
 	userID, ok := claims["user_id"].(string)
 
 	if !ok {

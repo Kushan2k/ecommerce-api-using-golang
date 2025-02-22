@@ -39,7 +39,8 @@ func (s *UserService) RegisterRoutes(router fiber.Router) {
 	router.Post("/register",s.RegisterUser)
 	router.Post("/login",s.LoginUser)
 	router.Post("/verify-account",s.veryfy_account)
-	router.Post("/resend-verification-code",s.resend_verification_code)
+	router.Post("/resend-verification-code",middlewares.Is_authenticated,s.resend_verification_code)
+	
 	router.Use("/protected",middlewares.Is_authenticated,func (c *fiber.Ctx) error {
 		return utils.WriteJSON(c,http.StatusCreated,map[string]string{
 			"message": fmt.Sprintf("protected route %s",c.Locals("user_id")),

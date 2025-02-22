@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/models"
@@ -20,7 +21,8 @@ var googleOAuthConfig = &oauth2.Config{
 	Endpoint:     google.Endpoint,
 }
 
-var oauthStateString = config.Envs.AUTH_SECRET // Prevents CSRF Attacks
+var oauthStateString = "randomstate123" // Prevents CSRF Attacks
+// var oauthStateString = config.Envs.AUTH_SECRET // Prevents CSRF Attacks
 
 type OAuthService struct{
 	db *gorm.DB
@@ -33,6 +35,8 @@ func NewOAuthService(database *gorm.DB) *OAuthService {
 }
 // Google Login Route
 func (s *OAuthService)  GoogleLogin(c *fiber.Ctx) error {
+	fmt.Println("Google Login")
+	
 	url := googleOAuthConfig.AuthCodeURL(oauthStateString, oauth2.AccessTypeOffline)
 	return c.Redirect(url)
 }

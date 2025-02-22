@@ -13,7 +13,10 @@ func NewMySqlDatabase(cfg Mysql.Config) (*gorm.DB, error) {
 
 	fmt.Println(cfg.FormatDSN())
 
-	db,err:=gorm.Open(mysql.Open(cfg.FormatDSN()))
+	db,err:=gorm.Open(mysql.Open(cfg.FormatDSN()),&gorm.Config{
+		PrepareStmt: true,
+		
+	})
 
 	if err!=nil{
 		return nil,err

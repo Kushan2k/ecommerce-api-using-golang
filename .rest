@@ -1,3 +1,5 @@
+GET http://localhost:8080/routes
+
 ###
 GET http://localhost:8080/api/v1/ping
 Content-Type: application/json
@@ -15,10 +17,13 @@ Content-Type: application/json
 }
 
 ###
+GET http://localhost:8080/api/v1/auth/protected
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhbmdheWFudGhhcGVyY3lAZf1haWwuY29tIiwiZXhwIjoxNzQwMzEyNDY4LCJpc3MiOiJlY29tLWFwaSIsInN1YiI6ImF1dGgiLCJ0aW1lIjoxNzQwMjI2MDY4LCJ1c2VyX2lkIjoyfQ.NIjd4_Bb922GByW1ULU2A8QBpNTCLp416Dr4QVdGq6I
+###
 
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhbmdheWFudGhhcGVyY3lAZ21haWwuY29tIiwiaXNzIjoiZWNvbS1hcGkiLCJzdWIiOiJhdXRoIiwidGltZSI6MTc0MDE2MDA5MywidXNlcl9pZCI6Mn0.G5oGz1J09AQoy6jpenVBRYNtXL15XxvB212rGSkpMFs
+
 
 {
   "email":"kushangayanthapercy@gmail.com",

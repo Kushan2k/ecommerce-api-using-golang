@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"time"
+
 	"github.com/ecom-api/config"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -23,18 +25,20 @@ func CheckPasswordHash(password,hash string) bool{
 	return err==nil
 }
 
-func GenerateJWT(vars jwt.MapClaims) (string,error){
-	key:=config.Envs.JWT_KEY
+func GenerateJWT(vars jwt.MapClaims) (string, error) {
+    key := config.Envs.JWT_KEY
 
-	t:=jwt.NewWithClaims(jwt.SigningMethodHS256,vars)
+		expirationTime := time.Now().Add(time.Duration(config.Envs.EXPIRE_TIME_MULTIPLER) * time.Hour).Unix()
 
-	s,err:=t.SignedString([]byte(key))
+		vars["exp"] = expirationTime
+    // Ensure the correct HMAC algorithm is used
+    t := jwt.NewWithClaims(jwt.SigningMethodHS256, vars)
 
-	if err!=nil{
-		return "",err
-	}
+    // Sign the token with the HMAC key
+    s, err := t.SignedString([]byte(key))
+    if err != nil {
+        return "", err
+    }
 
-	return s,nil
-
-
+    return s, nil
 }

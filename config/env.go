@@ -20,6 +20,8 @@ type Config struct {
 	MailUser string
 	MailPass string
 	MailPort int
+
+	EXPIRE_TIME_MULTIPLER int
 	
 
 
@@ -42,6 +44,13 @@ func initConfig() Config {
 		MailHost: getENV("MAIL_HOST", "smtp.titan.email"),
 		MailUser: getENV("MAIL_USER", ""),
 		MailPass: getENV("MAIL_PASS", ""),
+		EXPIRE_TIME_MULTIPLER: func() int {
+			multiplier, err := strconv.Atoi(getENV("EXPIRE_TIME_MULTIPLER", "24"))
+			if err != nil {
+				return 24
+			}
+			return multiplier
+		}(),
 		MailPort: func() int {
 			port, err := strconv.Atoi(getENV("MAIL_PORT", "465"))
 			if err != nil {

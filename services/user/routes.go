@@ -8,6 +8,7 @@ import (
 	"math/rand"
 
 	"github.com/ecom-api/config"
+	"github.com/ecom-api/middlewares"
 	"github.com/ecom-api/models"
 	"github.com/ecom-api/services/auth"
 	"github.com/ecom-api/types"
@@ -39,6 +40,11 @@ func (s *UserService) RegisterRoutes(router fiber.Router) {
 	router.Post("/login",s.LoginUser)
 	router.Post("/verify-account",s.veryfy_account)
 	router.Post("/resend-verification-code",s.resend_verification_code)
+	router.Use("/protected",middlewares.Is_authenticated,func (c *fiber.Ctx) error {
+		return utils.WriteJSON(c,http.StatusCreated,map[string]string{
+			"message": fmt.Sprintf("protected route %s",c.Locals("user_id")),
+		})
+	})
 
 	// router.HandleFunc("/register",s.RegisterUser).Methods("POST")
 	// router.HandleFunc("/login",s.LoginUser).Methods("POST")

@@ -6,7 +6,6 @@ import (
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
-	"github.com/ecom-api/middlewares"
 	"github.com/ecom-api/services/product"
 	"github.com/ecom-api/services/user"
 	Mysql "github.com/go-sql-driver/mysql"
@@ -42,7 +41,6 @@ func main(){
 
 	//product routes
 	product_router:=api.Group("/products/")
-	product_router.Use(middlewares.Is_authenticated)
 	product_service:=product.NewProductService(db)
 	product_service.RegisterRoutes(product_router)
 

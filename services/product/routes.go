@@ -1,6 +1,7 @@
 package product
 
 import (
+	"github.com/ecom-api/middlewares"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -22,9 +23,9 @@ func NewProductService(database *gorm.DB) *ProductService {
 func (s *ProductService) RegisterRoutes(router fiber.Router) {
 	router.Get("/",s.get_all_products)
 	router.Get("/:id",s.get_product_by_id)
-	router.Post("/",s.create_product)
-	router.Put("/:id",s.update_product)
-	router.Delete("/:id",s.delete_product)
+	router.Post("/",middlewares.Is_authenticated,s.create_product)
+	router.Put("/:id",middlewares.Is_authenticated,s.update_product)
+	router.Delete("/:id",middlewares.Is_authenticated,s.delete_product)
 }
 
 func (* ProductService) get_all_products(c *fiber.Ctx) error{

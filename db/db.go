@@ -23,6 +23,6 @@ func NewMySqlDatabase(cfg Mysql.Config) (*gorm.DB, error) {
 	}
 
 	//migration of the models
-	db.AutoMigrate(&models.User{},&models.Shop{},&models.Product{})
+	db.AutoMigrate(&models.User{},&models.UserAddress{},&models.Category{},&models.Product{},&models.ProductVariation{},&models.Order{},&models.OrderItem{},&models.Cart{},&models.Shipping{},&models.Payment{},&models.Review{},&models.Wishlist{},&models.VariationAttribute{})
 	return db, nil
 }

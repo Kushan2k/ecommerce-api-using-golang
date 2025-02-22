@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ecom-api/config"
+	"github.com/ecom-api/models"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -25,14 +26,27 @@ func CheckPasswordHash(password,hash string) bool{
 	return err==nil
 }
 
-func GenerateJWT(vars jwt.MapClaims) (string, error) {
+type Claims struct {
+	UserID uint   `json:"user_id"`
+	Email  string `json:"email"`
+	jwt.RegisteredClaims
+}
+
+func GenerateJWT(user models.User) (string, error) {
     key := config.Envs.JWT_KEY
 
-		expirationTime := time.Now().Add(time.Duration(config.Envs.EXPIRE_TIME_MULTIPLER) * time.Hour).Unix()
+		claims := Claims{
+		UserID: user.ID,
+		Email:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(config.Envs.EXPIRE_TIME_MULTIPLER) * time.Hour)), // Token expires in 24 hours
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Issuer:    "ecommerce-api",
+		},
+	}
 
-		vars["exp"] = expirationTime
     // Ensure the correct HMAC algorithm is used
-    t := jwt.NewWithClaims(jwt.SigningMethodHS256, vars)
+    t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
     // Sign the token with the HMAC key
     s, err := t.SignedString([]byte(key))

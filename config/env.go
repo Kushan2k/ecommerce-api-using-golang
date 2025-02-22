@@ -20,8 +20,11 @@ type Config struct {
 	MailUser string
 	MailPass string
 	MailPort int
+	AUTH_SECRET string
 
 	EXPIRE_TIME_MULTIPLER int
+	GOOGLE_CLIENT_SECRET string
+	GOOGLE_CLIENT_ID string
 	
 
 
@@ -40,6 +43,9 @@ func initConfig() Config {
 		DBAddress: getENV("DB_ADDRESS", "localhost:3306"),
 		DBName: getENV("DB_NAME", "go_ecom_api"),
 		JWT_KEY: getENV("JWT_SECRET","123"),
+		AUTH_SECRET: getENV("AUTH_SECRET","fdsg434545435jfdgjfdngnfdjgndfgsdtf6sd"),
+		GOOGLE_CLIENT_ID: getENV("GOOGLE_CLIENT_ID",""),
+		GOOGLE_CLIENT_SECRET: getENV("GOOGLE_CLIENT_SECRET",""),
 
 		MailHost: getENV("MAIL_HOST", "smtp.titan.email"),
 		MailUser: getENV("MAIL_USER", ""),

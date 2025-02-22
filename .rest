@@ -1,5 +1,10 @@
 GET http://localhost:8080/routes
 
+
+###
+GET http://localhost:8080/api/v1/auth/google
+
+
 ###
 GET http://localhost:8080/api/v1/ping
 Content-Type: application/json
@@ -18,7 +23,7 @@ Content-Type: application/json
 
 ###
 GET http://localhost:8080/api/v1/auth/protected
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt1c2hhbmdheWFudGhhcGVyY3lAZf1haWwuY29tIiwiZXhwIjoxNzQwMzEyNDY4LCJpc3MiOiJlY29tLWFwaSIsInN1YiI6ImF1dGgiLCJ0aW1lIjoxNzQwMjI2MDY4LCJ1c2VyX2lkIjoyfQ.NIjd4_Bb922GByW1ULU2A8QBpNTCLp416Dr4QVdGq6I
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6Imt1c2hhbmdheWFudGhhcGVyY3lAZ21haWwuY29tIiwiaXNzIjoiZWNvbW1lcmNlLWFwaSIsImV4cCI6MTc0MDMzMDEwOSwiaWF0IjoxNzQwMjQzNzA5fQ.uSHG0Nd8PRw_F4d-yTxzDzZJ75d2IqkMVHLnZtBGR6Y
 ###
 
 POST http://localhost:8080/api/v1/auth/login

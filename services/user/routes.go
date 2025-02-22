@@ -2,10 +2,8 @@ package user
 
 import (
 	"fmt"
-	"net/http"
-	"time"
-
 	"math/rand"
+	"net/http"
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/middlewares"
@@ -15,8 +13,6 @@ import (
 	"github.com/ecom-api/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
-
 	"gorm.io/gorm"
 )
 
@@ -40,6 +36,10 @@ func (s *UserService) RegisterRoutes(router fiber.Router) {
 	router.Post("/login",s.LoginUser)
 	router.Post("/verify-account",s.veryfy_account)
 	router.Post("/resend-verification-code",middlewares.Is_authenticated,s.resend_verification_code)
+
+	oauthService:=auth.NewOAuthService(s.db)
+	router.Get("/google", oauthService.GoogleLogin)
+	router.Get("/google/callback", oauthService.GoogleCallback)
 	
 	router.Use("/protected",middlewares.Is_authenticated,func (c *fiber.Ctx) error {
 		return utils.WriteJSON(c,http.StatusCreated,map[string]string{
@@ -176,14 +176,7 @@ func (s *UserService) LoginUser(c *fiber.Ctx) error {
 		
 	}
 
-	token,err:=auth.GenerateJWT( jwt.MapClaims{
-		"user_id": u.ID,
-		"email": u.Email,
-		"iss": "ecom-api",
-		"sub": "auth",
-		"time":time.Now().Unix(),
-
-	})
+	token,err:=auth.GenerateJWT(u)
 
 	if err!=nil{
 		return utils.WriteError(c,http.StatusInternalServerError,err)

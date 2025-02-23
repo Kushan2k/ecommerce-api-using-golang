@@ -51,7 +51,18 @@ type Product struct {
 	StockQty    int `gorm:"default:0"`
 	Category    Category `gorm:"foreignKey:CategoryID"`
 	Vendor      *User    `gorm:"foreignKey:VendorID"`
+
+	ProductImages []ProductImage `gorm:"foreignKey:ProductID"` // One-to-Many Relationship
 }
+
+type ProductImage struct {
+	gorm.Model
+	ProductID uint
+	ImageURL  string `gorm:"not null"`
+	Product   Product `gorm:"foreignKey:ProductID"`
+
+}
+
 
 // Product Variation Model
 type ProductVariation struct {
@@ -61,6 +72,15 @@ type ProductVariation struct {
 	Price     float64 `gorm:"not null"`
 	StockQty  int     `gorm:"default:0"`
 	Product   Product `gorm:"foreignKey:ProductID"`
+	VariantImages []VariantImage `gorm:"foreignKey:VariantID"` // One-to-Many Relationship
+}
+
+type VariantImage struct {
+	gorm.Model
+	VariantID uint
+	ImageURL  string `gorm:"not null"`
+	Variant   ProductVariation `gorm:"foreignKey:VariantID"`
+	
 }
 
 // Variation Attributes (e.g., Size, Color)

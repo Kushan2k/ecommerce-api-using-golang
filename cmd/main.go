@@ -10,6 +10,9 @@ import (
 	"github.com/ecom-api/services/user"
 	Mysql "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 );
 
 func main(){
@@ -31,6 +34,14 @@ func main(){
 	
 	server:=fiber.New()
 	api:=server.Group("/api/v1/")
+
+	//global middlewares
+	server.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
+	server.Use(helmet.New())
+	server.Use(logger.New())
 
 
 	//user router 

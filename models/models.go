@@ -63,7 +63,6 @@ type ProductImage struct {
 
 }
 
-
 // Product Variation Model
 type ProductVariation struct {
 	gorm.Model

@@ -1,9 +1,12 @@
 package product
 
 import (
+	"time"
+
 	"github.com/ecom-api/middlewares"
 	"github.com/ecom-api/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"gorm.io/gorm"
 )
 
@@ -28,7 +31,11 @@ func NewProductService(database *gorm.DB) *ProductService {
 
 
 func (s *ProductService) RegisterRoutes(router fiber.Router) {
-	router.Get("/",middlewares.Limiter,s.get_all_products)
+	router.Get("/",limiter.New(limiter.Config{
+            Max: 6,
+            Expiration: 10 * time.Second,
+        }),s.get_all_products)
+				
 	router.Get("/:id",s.get_product_by_id)
 	router.Post("/",middlewares.Is_authenticated,s.create_product)
 	router.Put("/:id",middlewares.Is_authenticated,s.update_product)

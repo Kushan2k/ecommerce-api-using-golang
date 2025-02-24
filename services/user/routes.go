@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/middlewares"
@@ -13,6 +14,7 @@ import (
 	"github.com/ecom-api/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +37,12 @@ func (s *UserService) RegisterRoutes(router fiber.Router) {
 	router.Post("/register",s.RegisterUser)
 	router.Post("/login",s.LoginUser)
 	router.Post("/verify-account",s.veryfy_account)
-	router.Post("/resend-verification-code",middlewares.Is_authenticated,s.resend_verification_code)
+
+	//only called 2 times in 5 minutes
+	router.Post("/resend-verification-code",limiter.New(limiter.Config{
+		Max: 2,
+		Expiration: 5* time.Minute,
+	}),middlewares.Is_authenticated,s.resend_verification_code)
 
 	oauthService:=auth.NewOAuthService(s.db)
 	router.Get("/google", oauthService.GoogleLogin)

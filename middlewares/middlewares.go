@@ -3,10 +3,12 @@ package middlewares
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -53,4 +55,15 @@ func Is_authenticated(c *fiber.Ctx) error {
     c.Locals("user_id", userID)
 
     return c.Next()
+}
+
+
+func Limiter(c *fiber.Ctx) error {
+    return limiter.New(
+        limiter.Config{
+            Max: 6,
+            Expiration: 5 * time.Minute,
+            SkipFailedRequests: true,
+        },
+    )(c)
 }

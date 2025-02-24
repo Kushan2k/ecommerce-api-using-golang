@@ -2,6 +2,7 @@ package product
 
 import (
 	"github.com/ecom-api/middlewares"
+	"github.com/ecom-api/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -10,6 +11,12 @@ import (
 
 type ProductService struct {
 	db *gorm.DB
+}
+
+type QueryParams struct {
+	Page int `json:"page"`
+	PerPage int `json:"per_page"`
+	Search string `json:"search"`
 }
 
 
@@ -21,29 +28,45 @@ func NewProductService(database *gorm.DB) *ProductService {
 
 
 func (s *ProductService) RegisterRoutes(router fiber.Router) {
-	router.Get("/",s.get_all_products)
+	router.Get("/",middlewares.Limiter,s.get_all_products)
 	router.Get("/:id",s.get_product_by_id)
 	router.Post("/",middlewares.Is_authenticated,s.create_product)
 	router.Put("/:id",middlewares.Is_authenticated,s.update_product)
 	router.Delete("/:id",middlewares.Is_authenticated,s.delete_product)
 }
 
-func (* ProductService) get_all_products(c *fiber.Ctx) error{
-	return c.JSON("All products")
+func (s *ProductService) get_all_products(c *fiber.Ctx) error{
+
+	var query QueryParams=QueryParams{
+		Page:c.QueryInt("page",1),
+		PerPage:c.QueryInt("per_page",10),
+		Search:c.Query("search"),
+	}
+
+
+	var products []models.Product
+	if query.Search!=""{
+		s.db.Find(&products).Where("name LIKE ?", "%"+query.Search+"%").Limit(query.PerPage).Offset((query.Page-1)*query.PerPage).Preload("Category").Preload("ProductImages").Preload("ProductVariation").Preload("VariationAttribute").Preload("VariantImage")
+
+	}else {
+		s.db.Find(&products).Where("id > ?",0).Limit(query.PerPage).Offset((query.Page-1)*query.PerPage).Preload("Category").Preload("ProductImages").Preload("ProductVariation").Preload("VariationAttribute").Preload("VariantImage")
+	}
+
+	return c.JSON(products)
 }
 
-func (* ProductService) get_product_by_id(c *fiber.Ctx) error{
+func (s *ProductService) get_product_by_id(c *fiber.Ctx) error{
 	return c.JSON("Product by id")
 }
 
-func (* ProductService) create_product(c *fiber.Ctx) error{
+func (s *ProductService) create_product(c *fiber.Ctx) error{
 	return c.JSON("Create product")
 }
 
-func (* ProductService) update_product(c *fiber.Ctx) error{
+func (s *ProductService) update_product(c *fiber.Ctx) error{
 	return c.JSON("Update product")
 }
 
-func (* ProductService) delete_product(c *fiber.Ctx) error{
+func (s *ProductService) delete_product(c *fiber.Ctx) error{
 	return c.JSON("Delete product")
 }

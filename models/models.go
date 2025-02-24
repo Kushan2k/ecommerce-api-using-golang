@@ -13,7 +13,7 @@ type User struct {
 	Password  string `gorm:"not null"`
 	Phone     string `gorm:"size:20"`
 	Role      string `gorm:"type:enum('customer', 'admin', 'vendor');default:'customer'"`
-	Addresses []UserAddress `gorm:"foreignKey:UserID"` // One-to-Many Relationship
+	Addresses []UserAddress `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 
 	OTP int `gorm:"null"`       // OTP field with max length 6
 	Verified bool `gorm:"default:false"`       // Verified field with default value false
@@ -37,7 +37,7 @@ type Category struct {
 	gorm.Model
 	Name     string  `gorm:"unique;not null"`
 	ParentID *uint   // Nullable Parent Category
-	Parent   *Category `gorm:"foreignKey:ParentID"`
+	Parent   *Category `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE;"`
 }
 
 // Product Model
@@ -52,7 +52,7 @@ type Product struct {
 	Category    Category `gorm:"foreignKey:CategoryID"`
 	Vendor      *User    `gorm:"foreignKey:VendorID"`
 
-	ProductImages []ProductImage `gorm:"foreignKey:ProductID"` // One-to-Many Relationship
+	ProductImages []ProductImage `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
 type ProductImage struct {
@@ -71,7 +71,7 @@ type ProductVariation struct {
 	Price     float64 `gorm:"not null"`
 	StockQty  int     `gorm:"default:0"`
 	Product   Product `gorm:"foreignKey:ProductID"`
-	VariantImages []VariantImage `gorm:"foreignKey:VariantID"` // One-to-Many Relationship
+	VariantImages []VariantImage `gorm:"foreignKey:VariantID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
 type VariantImage struct {
@@ -99,7 +99,7 @@ type Order struct {
 	TotalPrice  float64 `gorm:"not null"`
 	Status      string  `gorm:"type:enum('pending', 'shipped', 'delivered', 'cancelled', 'returned');default:'pending'"`
 	User        User      `gorm:"foreignKey:UserID"`
-	ShippingAddress UserAddress `gorm:"foreignKey:AddressID"`
+	ShippingAddress UserAddress `gorm:"foreignKey:AddressID;constraint:OnDelete:CASCADE;"`
 }
 
 // Order Items (Products in an Order)
@@ -139,7 +139,7 @@ type Review struct {
 	ProductID uint
 	Rating    int    `gorm:"check:rating >= 1 AND rating <= 5"`
 	Comment   string
-	User      User    `gorm:"foreignKey:UserID"`
+	User      *User    `gorm:"foreignKey:UserID"`
 	Product   Product `gorm:"foreignKey:ProductID"`
 }
 

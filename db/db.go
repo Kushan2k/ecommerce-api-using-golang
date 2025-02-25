@@ -19,7 +19,8 @@ func NewMySqlDatabase(cfg Mysql.Config) (*gorm.DB, error) {
 		return nil,err
 	}
 
+	
 	//migration of the models
-	db.AutoMigrate(&models.User{},&models.UserAddress{},&models.Category{},&models.Product{},&models.ProductVariation{},&models.Order{},&models.OrderItem{},&models.Cart{},&models.Shipping{},&models.Payment{},&models.Review{},&models.Wishlist{},&models.VariationAttribute{},&models.ProductImage{},&models.VariantImage{})
+	db.AutoMigrate(&models.User{},&models.UserAddress{},&models.Category{},&models.Product{},&models.ProductVariation{},&models.Order{},&models.OrderItem{},&models.Payment{},&models.VariationAttribute{},&models.ProductImage{},&models.VariantImage{})
 	return db, nil
 }

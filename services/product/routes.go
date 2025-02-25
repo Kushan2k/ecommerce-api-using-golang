@@ -56,7 +56,13 @@ func (s *ProductService) get_all_products(c *fiber.Ctx) error{
 		s.db.Find(&products).Where("name LIKE ?", "%"+query.Search+"%").Limit(query.PerPage).Offset((query.Page-1)*query.PerPage).Preload("ProductImages").Preload("Category").Preload("ProductVariation").Preload("VariationAttribute").Preload("VariantImage")
 
 	}else {
-		s.db.Find(&products).Where("id > ?",0).Limit(query.PerPage).Offset((query.Page-1)*query.PerPage).Preload("ProductImages").Preload("Category").Preload("ProductVariation").Preload("VariationAttribute").Preload("VariantImage")
+		s.db.Preload("Category").
+   Preload("Vendor").
+   Preload("ProductImages").
+   Preload("ProductVariations.VariantImages").
+   Preload("ProductVariations.VariationAttributes").
+   Find(&products).Limit(query.PerPage).Offset((query.Page-1)*query.PerPage)
+		
 	}
 
 	return c.JSON(products)

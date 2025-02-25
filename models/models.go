@@ -17,6 +17,7 @@ type User struct {
 
 	OTP int `gorm:"null"`       // OTP field with max length 6
 	Verified bool `gorm:"default:false"`       // Verified field with default value false
+	Products []Product `gorm:"foreignKey:VendorID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
 // User Address Model (Multiple Addresses per User)
@@ -29,7 +30,7 @@ type UserAddress struct {
 	PostalCode  string `gorm:"size:20"`
 	Country     string `gorm:"size:100;not null"`
 	IsDefault   bool   `gorm:"default:false"` // Flag for Default Address
-	User        User   `gorm:"foreignKey:UserID"`
+	
 }
 
 // Category Model
@@ -37,7 +38,7 @@ type Category struct {
 	gorm.Model
 	Name     string  `gorm:"unique;not null"`
 	ParentID *uint   // Nullable Parent Category
-	Parent   *Category `gorm:"foreignKey:ParentID;constraint:OnDelete:CASCADE;"`
+	
 }
 
 // Product Model
@@ -47,10 +48,9 @@ type Product struct {
 	Description string
 	BasePrice   float64 `gorm:"not null"`
 	CategoryID  uint
-	VendorID    *uint
+	VendorID    uint
 	StockQty    int `gorm:"default:0"`
 	Category    Category `gorm:"foreignKey:CategoryID"`
-	Vendor      *User    `gorm:"foreignKey:VendorID"`
 
 	ProductImages []ProductImage `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
@@ -59,7 +59,6 @@ type ProductImage struct {
 	gorm.Model
 	ProductID uint
 	ImageURL  string `gorm:"not null"`
-	Product   Product `gorm:"foreignKey:ProductID"`
 
 }
 
@@ -70,7 +69,6 @@ type ProductVariation struct {
 	SKU       string  `gorm:"unique;not null"`
 	Price     float64 `gorm:"not null"`
 	StockQty  int     `gorm:"default:0"`
-	Product   Product `gorm:"foreignKey:ProductID"`
 	VariantImages []VariantImage `gorm:"foreignKey:VariantID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
@@ -88,18 +86,18 @@ type VariationAttribute struct {
 	VariationID   uint
 	AttributeName string `gorm:"size:100;not null"`
 	AttributeValue string `gorm:"size:100;not null"`
-	Variation    ProductVariation `gorm:"foreignKey:VariationID"`
 }
 
 // Order Model
 type Order struct {
 	gorm.Model
 	UserID      uint
-	AddressID   uint  // Reference to UserAddress
+	Address   string  `gorm:"not null"`  // Reference to UserAddress
 	TotalPrice  float64 `gorm:"not null"`
 	Status      string  `gorm:"type:enum('pending', 'shipped', 'delivered', 'cancelled', 'returned');default:'pending'"`
-	User        User      `gorm:"foreignKey:UserID"`
-	ShippingAddress UserAddress `gorm:"foreignKey:AddressID;constraint:OnDelete:CASCADE;"`
+	OrderItems []OrderItem `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
+	Payment     Payment `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-One Relationship
+	
 }
 
 // Order Items (Products in an Order)
@@ -109,8 +107,8 @@ type OrderItem struct {
 	VariationID uint
 	Quantity    int     `gorm:"not null;check:quantity > 0"`
 	Price       float64 `gorm:"not null"`
-	Order       Order   `gorm:"foreignKey:OrderID"`
-	Variation   ProductVariation `gorm:"foreignKey:VariationID"`
+	
+	
 }
 
 // Payment Model
@@ -120,44 +118,5 @@ type Payment struct {
 	PaymentMethod string `gorm:"type:enum('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery');not null"`
 	PaymentStatus string `gorm:"type:enum('pending', 'completed', 'failed');default:'pending'"`
 	TransactionID *string `gorm:"unique"`
-	Order         Order   `gorm:"foreignKey:OrderID"`
-}
-
-// Shipping Model
-type Shipping struct {
-	gorm.Model
-	OrderID         uint
-	TrackingNumber  *string `gorm:"unique"`
-	ShippingStatus  string  `gorm:"type:enum('pending', 'shipped', 'delivered');default:'pending'"`
-	Order           Order   `gorm:"foreignKey:OrderID"`
-}
-
-// Review Model
-type Review struct {
-	gorm.Model
-	UserID    uint
-	ProductID uint
-	Rating    int    `gorm:"check:rating >= 1 AND rating <= 5"`
-	Comment   string
-	User      *User    `gorm:"foreignKey:UserID"`
-	Product   Product `gorm:"foreignKey:ProductID"`
-}
-
-// Wishlist Model
-type Wishlist struct {
-	gorm.Model
-	UserID    uint
-	ProductID uint
-	User      User    `gorm:"foreignKey:UserID"`
-	Product   Product `gorm:"foreignKey:ProductID"`
-}
-
-// Cart Model
-type Cart struct {
-	gorm.Model
-	UserID      uint
-	VariationID uint
-	Quantity    int `gorm:"not null;check:quantity > 0"`
-	User        User             `gorm:"foreignKey:UserID"`
-	Variation   ProductVariation `gorm:"foreignKey:VariationID"`
+	
 }

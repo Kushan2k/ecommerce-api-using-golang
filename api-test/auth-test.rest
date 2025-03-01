@@ -1,0 +1,31 @@
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "first_name":"kushan",
+  "last_name":"Gayantha",
+  "email":"kushangayanthapercy@gmail.com",
+  "password":"123456789"
+}
+
+###
+GET http://localhost:8080/api/v1/auth/protected
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6Imt1c2hhbmdheWFudGhhcGVyY3lAZ21haWwuY29tIiwiaXNzIjoiZWNvbW1lcmNlLWFwaSIsImV4cCI6MTc0MDgxMDAyNCwiaWF0IjoxNzQwNzIzNjI0fQ.iWYlgdiOflgTEOW7uxRL1se0UZZCWulVzXzd9-HJl1Y
+###
+
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+
+{
+  "email":"kushangayanthapercy@gmail.com",
+  "password":"123456789"
+}
+
+###
+POST http://localhost:8080/api/v1/auth/resend-verification-code
+Content-Type: application/json
+
+{
+  "email":"kushangayanthapercy@gmail.com"
+}

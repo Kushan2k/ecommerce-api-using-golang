@@ -7,6 +7,7 @@ import (
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
 	"github.com/ecom-api/services/product"
+	"github.com/ecom-api/services/shop"
 	"github.com/ecom-api/services/user"
 	Mysql "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
@@ -54,6 +55,13 @@ func main(){
 	product_router:=api.Group("/products/")
 	product_service:=product.NewProductService(db)
 	product_service.RegisterRoutes(product_router)
+
+
+	//shop routes
+	shop_router:=api.Group("/shops/")
+	shop_service:=shop.NewShopService(db)
+	shop_service.RegisterRoutes(shop_router)
+
 
 
 	//view all routes

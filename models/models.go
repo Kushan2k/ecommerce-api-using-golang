@@ -17,7 +17,18 @@ type User struct {
 
 	OTP int `gorm:"null"`       // OTP field with max length 6
 	Verified bool `gorm:"default:false"`       // Verified field with default value false
-	Products []Product `gorm:"foreignKey:VendorID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
+
+	ShopID *uint
+	Shop Shop `gorm:"foreignKey:ShopID;constraint:OnDelete:CASCADE;"` // One-to-One Relationship
+}
+
+type Shop struct {
+	gorm.Model
+	UserID uint
+	ShopName string `gorm:"not null"`
+	ShopDescription string
+	ShopLogoURL *string
+	Products []Product `gorm:"foreignKey:ShopID;constraint:OnDelete:CASCADE;"` // One-to-Many
 }
 
 // User Address Model (Multiple Addresses per User)
@@ -48,36 +59,37 @@ type Product struct {
 	Description string
 	BasePrice   float64 `gorm:"not null"`
 	CategoryID  uint
-	VendorID    uint
+	ShopID    uint
 	StockQty    int `gorm:"default:0"`
 	Category    Category `gorm:"foreignKey:CategoryID"`
 
-	ProductImages []ProductImage `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
+	ProductImages []ProductImage `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // 
+	Variations *[]ProductVariation `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
 type ProductImage struct {
 	gorm.Model
 	ProductID uint
 	ImageURL  string `gorm:"not null"`
+	
 
 }
 
 // Product Variation Model
 type ProductVariation struct {
 	gorm.Model
+	Variation VariationAttribute `gorm:"foreignKey:VariationID;constraint:OnDelete:CASCADE;"` // One-to-One Relationship
 	ProductID uint
 	SKU       string  `gorm:"unique;not null"`
 	Price     float64 `gorm:"not null"`
 	StockQty  int     `gorm:"default:0"`
-	VariantImages []VariantImage `gorm:"foreignKey:VariantID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
+	VariantImages *[]VariantImage `gorm:"foreignKey:VariantID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
 
 type VariantImage struct {
 	gorm.Model
 	VariantID uint
 	ImageURL  string `gorm:"not null"`
-	Variant   ProductVariation `gorm:"foreignKey:VariantID"`
-	
 }
 
 // Variation Attributes (e.g., Size, Color)
@@ -89,34 +101,34 @@ type VariationAttribute struct {
 }
 
 // Order Model
-type Order struct {
-	gorm.Model
-	UserID      uint
-	Address   string  `gorm:"not null"`  // Reference to UserAddress
-	TotalPrice  float64 `gorm:"not null"`
-	Status      string  `gorm:"type:enum('pending', 'shipped', 'delivered', 'cancelled', 'returned');default:'pending'"`
-	OrderItems []OrderItem `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
-	Payment     Payment `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-One Relationship
+// type Order struct {
+// 	gorm.Model
+// 	UserID      uint
+// 	Address   string  `gorm:"not null"`  // Reference to UserAddress
+// 	TotalPrice  float64 `gorm:"not null"`
+// 	Status      string  `gorm:"type:enum('pending', 'shipped', 'delivered', 'cancelled', 'returned');default:'pending'"`
+// 	OrderItems []OrderItem `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
+// 	Payment     Payment `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;"` // One-to-One Relationship
 	
-}
+// }
 
-// Order Items (Products in an Order)
-type OrderItem struct {
-	gorm.Model
-	OrderID     uint
-	VariationID uint
-	Quantity    int     `gorm:"not null;check:quantity > 0"`
-	Price       float64 `gorm:"not null"`
+// // Order Items (Products in an Order)
+// type OrderItem struct {
+// 	gorm.Model
+// 	OrderID     uint
+// 	VariationID uint
+// 	Quantity    int     `gorm:"not null;check:quantity > 0"`
+// 	Price       float64 `gorm:"not null"`
 	
 	
-}
+// }
 
-// Payment Model
-type Payment struct {
-	gorm.Model
-	OrderID       uint
-	PaymentMethod string `gorm:"type:enum('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery');not null"`
-	PaymentStatus string `gorm:"type:enum('pending', 'completed', 'failed');default:'pending'"`
-	TransactionID *string `gorm:"unique"`
+// // Payment Model
+// type Payment struct {
+// 	gorm.Model
+// 	OrderID       uint
+// 	PaymentMethod string `gorm:"type:enum('credit_card', 'paypal', 'bank_transfer', 'cash_on_delivery');not null"`
+// 	PaymentStatus string `gorm:"type:enum('pending', 'completed', 'failed');default:'pending'"`
+// 	TransactionID *string `gorm:"unique"`
 	
-}
+// }

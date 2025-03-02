@@ -54,3 +54,18 @@ func Is_authenticated(c *fiber.Ctx) error {
 
     return c.Next()
 }
+
+
+func is_supplier(c *fiber.Ctx) error {
+    // Check if user is a supplier
+    role, found := c.Locals("role").(string)
+    if !found {
+        return utils.WriteError(c, fiber.StatusUnauthorized, fmt.Errorf("role not found in locals"))
+    }
+
+    if role != "supplier" {
+        return utils.WriteError(c, fiber.StatusUnauthorized, fmt.Errorf("unauthorized"))
+    }
+
+    return c.Next()
+}

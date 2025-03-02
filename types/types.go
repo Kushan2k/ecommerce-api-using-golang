@@ -40,3 +40,10 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 
 }
+
+type ShopRequest struct {
+	Name string `json:"name" validate:"required"`
+	Description string `json:"description" validate:"required"`
+	LogoURL string `json:"logo_url" validate:"url"`
+	UserID int `json:"user_id" validate:"required"`
+}

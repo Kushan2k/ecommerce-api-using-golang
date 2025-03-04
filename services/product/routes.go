@@ -67,7 +67,29 @@ func (s *ProductService) get_all_products(c *fiber.Ctx) error{
 }
 
 func (s *ProductService) get_product_by_id(c *fiber.Ctx) error{
-	return c.JSON("Product by id")
+	
+	id:=c.Params("id","")
+
+	if id==""{
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid product id",
+		})
+	}
+
+	var product models.Product
+
+	res:=s.db.Model(&models.Product{}).Where("id = ?",id).Preload("Category").
+	Preload("ProductImages").Preload("Variations").First(&product)
+
+	if res.Error!=nil{
+		return c.Status(200).JSON(product)
+	}
+
+	return c.Status(404).JSON(fiber.Map{
+			"error": "Product not found",
+		})
+
+	
 }
 
 func (s *ProductService) create_product(c *fiber.Ctx) error{

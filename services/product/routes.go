@@ -101,5 +101,24 @@ func (s *ProductService) update_product(c *fiber.Ctx) error{
 }
 
 func (s *ProductService) delete_product(c *fiber.Ctx) error{
-	return c.JSON("Delete product")
+	
+	id:=c.Params("id","")
+
+	if id==""{
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid product id",
+		})
+	}
+
+	var product models.Product
+
+	res:=s.db.Model(&models.Product{}).Where("id = ?",id).Delete(&product)
+
+	if res.Error!=nil{
+		return c.Status(200).JSON(product)
+	}
+
+	return c.Status(404).JSON(fiber.Map{
+			"error": "Product not found",
+		})
 }

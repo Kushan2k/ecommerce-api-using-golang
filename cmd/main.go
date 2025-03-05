@@ -6,6 +6,7 @@ import (
 
 	"github.com/ecom-api/config"
 	"github.com/ecom-api/db"
+	"github.com/ecom-api/services/categories"
 	"github.com/ecom-api/services/product"
 	"github.com/ecom-api/services/shop"
 	"github.com/ecom-api/services/user"
@@ -55,6 +56,11 @@ func main(){
 	product_router:=api.Group("/products/")
 	product_service:=product.NewProductService(db)
 	product_service.RegisterRoutes(product_router)
+
+	//category routes
+	category_router:=api.Group("/categories/")
+	category_service:=categories.NewCategoryService(db)
+	category_service.RegisterRoutes(category_router)
 
 
 	//shop routes

@@ -5,6 +5,7 @@ import (
 
 	"github.com/ecom-api/middlewares"
 	"github.com/ecom-api/models"
+	"github.com/ecom-api/types"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"gorm.io/gorm"
@@ -93,7 +94,49 @@ func (s *ProductService) get_product_by_id(c *fiber.Ctx) error{
 }
 
 func (s *ProductService) create_product(c *fiber.Ctx) error{
-	return c.JSON("Create product")
+	
+	var product types.ProductCreateResponse
+
+	err:=c.BodyParser(&product)
+
+	if err!=nil{
+		return c.Status(400).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	tx:=s.db.Create(&models.Product{
+		Name:product.Name,
+		Description:product.Description,
+		BasePrice:product.BasePrice,
+		CategoryID:product.CategoryID,
+		ShopID:product.ShopID,
+		StockQty:product.StockQty,
+	})
+
+	if tx.Error!=nil{
+		return c.Status(400).JSON(fiber.Map{
+			"error": tx.Error.Error(),
+		})
+	}
+
+
+	success,urls:=add_product_images(c,product.ShopID)
+
+	if success{
+		for _,url:=range urls{
+			go func (){
+				s.db.Create(&models.ProductImage{
+					ProductID:product.ID,
+					ImageURL:url,
+				})
+			}()
+		}
+	}
+
+
+	return c.Status(201).JSON(product)
+
 }
 
 func (s *ProductService) update_product(c *fiber.Ctx) error{
@@ -121,4 +164,32 @@ func (s *ProductService) delete_product(c *fiber.Ctx) error{
 	return c.Status(404).JSON(fiber.Map{
 			"error": "Product not found",
 		})
+}
+
+
+func add_product_images(c *fiber.Ctx,storeID uint) (bool,[]string){
+	
+	form,err:=c.MultipartForm()
+
+	if err!=nil{
+		return false,nil
+	}
+
+	files:=form.File["images"]
+
+	var fileUrls []string
+
+	for _,file:=range files{
+		path:= "../../uploads/"+string(rune(storeID))+"/"+file.Filename
+		if err:=c.SaveFile(file,path);err!=nil{
+			return false,nil
+		}
+
+		fileUrls=append(fileUrls,path)
+
+	}
+
+	return true,fileUrls
+
+
 }

@@ -47,3 +47,12 @@ type ShopRequest struct {
 	LogoURL string `json:"logo_url" validate:"url"`
 	UserID int `json:"user_id" validate:"required"`
 }
+
+type ProductCreateResponse struct {
+	Name 			string  `json:"name" validate:"required,min=5,max=100"`
+	Description 	string  `json:"description " validate:"required,min=50,max=1000"`
+	BasePrice 		float64 `json:"base_price" validate:"required,gte=0"`
+	CategoryID 		uint    `json:"category_id" validate:"required"`
+	ShopID    		uint    `json:"shop_id" validate:"required"`
+	StockQty    	int     `json:"stock_qty" validate:"required,gte=0"`
+}

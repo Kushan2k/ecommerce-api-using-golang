@@ -1,6 +1,8 @@
 package product
 
 import (
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/ecom-api/middlewares"
@@ -172,12 +174,15 @@ func add_product_images(c *fiber.Ctx,storeID uint) (bool,[]string){
 	form,err:=c.MultipartForm()
 
 	if err!=nil{
+		log.Fatalln(err)
 		return false,nil
 	}
 
 	files:=form.File["images"]
 
 	var fileUrls []string
+
+	fmt.Println(files)
 
 	for _,file:=range files{
 		path:= "../../uploads/"+string(rune(storeID))+"/"+file.Filename

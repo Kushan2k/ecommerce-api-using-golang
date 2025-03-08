@@ -66,10 +66,6 @@ type Product struct {
 	ProductImages []ProductImage `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // 
 	Variations *[]ProductVariation `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"` // One-to-Many Relationship
 }
-
-
-
-
 type ProductImage struct {
 	gorm.Model
 	ProductID uint

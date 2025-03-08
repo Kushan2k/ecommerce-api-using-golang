@@ -23,6 +23,7 @@ func NewCategoryService(database *gorm.DB) *CategoryService {
 
 func (s *CategoryService) RegisterRoutes(router fiber.Router) {
 	router.Post("/",s.create_category)
+	router.Get("/",s.get_all_categories)
 	
 }
 
@@ -51,4 +52,14 @@ func (s *CategoryService) create_category(c *fiber.Ctx) error{
 		})
 	}
 	return c.Status(201).JSON(category)
+}
+
+func (s *CategoryService) get_all_categories(c *fiber.Ctx) error{
+	var categories []models.Category
+	if err:=s.db.Find(&categories).Error;err!=nil{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":err.Error(),
+		})
+	}
+	return c.Status(200).JSON(categories)
 }

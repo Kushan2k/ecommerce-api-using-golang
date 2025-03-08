@@ -107,20 +107,20 @@ func (s *ProductService) create_product(c *fiber.Ctx) error{
 		})
 	}
 
-	tx:=s.db.Create(&models.Product{
-		Name:product.Name,
-		Description:product.Description,
-		BasePrice:product.BasePrice,
-		CategoryID:product.CategoryID,
-		ShopID:product.ShopID,
-		StockQty:product.StockQty,
-	})
+	// tx:=s.db.Create(&models.Product{
+	// 	Name:product.Name,
+	// 	Description:product.Description,
+	// 	BasePrice:product.BasePrice,
+	// 	CategoryID:product.CategoryID,
+	// 	ShopID:product.ShopID,
+	// 	StockQty:product.StockQty,
+	// })
 
-	if tx.Error!=nil{
-		return c.Status(400).JSON(fiber.Map{
-			"error": tx.Error.Error(),
-		})
-	}
+	// if tx.Error!=nil{
+	// 	return c.Status(400).JSON(fiber.Map{
+	// 		"error": tx.Error.Error(),
+	// 	})
+	// }
 
 
 	success,urls:=add_product_images(c,product.ShopID)
@@ -129,13 +129,12 @@ func (s *ProductService) create_product(c *fiber.Ctx) error{
 		for _,url:=range urls{
 			go func (){
 				s.db.Create(&models.ProductImage{
-					ProductID:product.ID,
+					ProductID:1,
 					ImageURL:url,
 				})
 			}()
 		}
 	}
-
 
 	return c.Status(201).JSON(product)
 
@@ -174,7 +173,7 @@ func add_product_images(c *fiber.Ctx,storeID uint) (bool,[]string){
 	form,err:=c.MultipartForm()
 
 	if err!=nil{
-		log.Fatalln(err)
+		log.Fatalln(err.Error())
 		return false,nil
 	}
 
@@ -182,17 +181,21 @@ func add_product_images(c *fiber.Ctx,storeID uint) (bool,[]string){
 
 	var fileUrls []string
 
-	fmt.Println(files)
+	fmt.Println("Files %s",fmt.Sprint(len(files)))
 
 	for _,file:=range files{
-		path:= "../../uploads/"+string(rune(storeID))+"/"+file.Filename
+		
+		path:= "./uploads/"+file.Filename
 		if err:=c.SaveFile(file,path);err!=nil{
+			log.Fatalln(err.Error())
 			return false,nil
 		}
 
 		fileUrls=append(fileUrls,path)
 
 	}
+
+	fmt.Printf("Files uploaded: %d\n",len(files))
 
 	return true,fileUrls
 

@@ -181,7 +181,7 @@ func add_product_images(c *fiber.Ctx,storeID uint) (bool,[]string){
 
 	var fileUrls []string
 
-	fmt.Println("Files %s",fmt.Sprint(len(files)))
+	// fmt.Println("Files %s",fmt.Sprint(len(files)))
 
 	for _,file:=range files{
 		

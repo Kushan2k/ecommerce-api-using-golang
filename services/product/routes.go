@@ -107,6 +107,7 @@ func (s *ProductService) create_product(c *fiber.Ctx) error{
 		})
 	}
 
+	//TODO: Add product to database
 	// tx:=s.db.Create(&models.Product{
 	// 	Name:product.Name,
 	// 	Description:product.Description,

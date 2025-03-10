@@ -13,8 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
 type ProductService struct {
 	db *gorm.DB
 }
@@ -94,6 +92,7 @@ func (s *ProductService) get_product_by_id(c *fiber.Ctx) error{
 
 	
 }
+
 
 func (s *ProductService) create_product(c *fiber.Ctx) error{
 	

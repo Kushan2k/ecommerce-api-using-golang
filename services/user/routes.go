@@ -132,19 +132,23 @@ func (s *UserService) RegisterUser(c *fiber.Ctx) error {
 
 	info,error:=os.Stat(path);
 
+	fmt.Println(info);
+	fmt.Println(error.Error());
+
 	if os.IsNotExist(error){
-		if info.IsDir(){
 			err=os.MkdirAll(path, os.ModePerm)
 			if err!=nil{
 				return utils.WriteError(c,http.StatusInternalServerError,err)
 				
 			}
-		}
+		
 	}else {
-		path="./uploads/"+payload.Email+"/"+time.Now().Format("2006-01-02")
-		err=os.MkdirAll(path, os.ModePerm)
-		if err!=nil{
-			return utils.WriteError(c,http.StatusInternalServerError,err)
+		if info.IsDir() {
+			path="./uploads/"+payload.Email+"/"+time.Now().Format("2006-01-02")
+			err=os.MkdirAll(path, os.ModePerm)
+			if err!=nil{
+				return utils.WriteError(c,http.StatusInternalServerError,err)
+			}
 		}
 	}
 

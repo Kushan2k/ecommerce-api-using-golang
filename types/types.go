@@ -7,6 +7,7 @@ type RegisterBodyType struct {
 	LastName string `json:"last_name" validate:"max=50,required"`
 	Email string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"min=8,required"`
+	ConfirmPassword string `json:"confirm_password" validate:"eqfield=Password"`
 
 }
 

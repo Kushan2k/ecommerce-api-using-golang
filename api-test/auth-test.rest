@@ -5,7 +5,8 @@ Content-Type: application/json
   "first_name":"kushan",
   "last_name":"Gayantha",
   "email":"kushangayanthapercy@gmail.com",
-  "password":"123456789"
+  "password":"123456789",
+  "confirm_password":"123456789"
 }
 
 ###

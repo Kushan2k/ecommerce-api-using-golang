@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+
+	"os"
 	"time"
 
 	"github.com/ecom-api/config"
@@ -125,7 +127,26 @@ func (s *UserService) RegisterUser(c *fiber.Ctx) error {
 	mailer:=utils.GetMailer()
 	msg:=utils.GetMessage()
 
-	
+
+	var path string ="./uploads/"+payload.Email;
+
+	info,error:=os.Stat(path);
+
+	if os.IsNotExist(error){
+		if info.IsDir(){
+			err=os.MkdirAll(path, os.ModePerm)
+			if err!=nil{
+				return utils.WriteError(c,http.StatusInternalServerError,err)
+				
+			}
+		}
+	}else {
+		path="./uploads/"+payload.Email+"/"+time.Now().Format("2006-01-02")
+		err=os.MkdirAll(path, os.ModePerm)
+		if err!=nil{
+			return utils.WriteError(c,http.StatusInternalServerError,err)
+		}
+	}
 
 	msg.SetHeader("From",config.Envs.MailUser)
 	msg.SetHeader("To",payload.Email)

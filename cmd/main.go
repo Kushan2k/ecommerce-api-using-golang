@@ -84,7 +84,7 @@ func main(){
 		return c.JSON(routeList)
 	})
 
-	// if err:=server.Listen(":8080"); err!=nil{
-	// 	log.Fatalf("Error starting server: %s", err)
-	// }
+	if err:=server.Listen(":8080"); err!=nil{
+		log.Fatalf("Error starting server: %s", err)
+	}
 }

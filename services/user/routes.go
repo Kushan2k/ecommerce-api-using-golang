@@ -25,15 +25,11 @@ type UserService struct {
 	db *gorm.DB
 }
 
-
-
 func NewUserService(database *gorm.DB) *UserService {
 	return &UserService{
 		db: database,
 	}
 }
-
-
 func (s *UserService) RegisterRoutes(router fiber.Router) {
 
 	router.Post("/register",s.RegisterUser)
@@ -55,16 +51,7 @@ func (s *UserService) RegisterRoutes(router fiber.Router) {
 			"message": fmt.Sprintf("protected route %s",c.Locals("user_id")),
 		})
 	})
-
-	// router.HandleFunc("/register",s.RegisterUser).Methods("POST")
-	// router.HandleFunc("/login",s.LoginUser).Methods("POST")
-	// router.HandleFunc("/verify-account",s.veryfy_account).Methods("POST")
-	// router.HandleFunc("/resend-verification-code",s.resend_verification_code).Methods("POST")
 }
-
-
-
-
 func (s *UserService) RegisterUser(c *fiber.Ctx) error {
 
 

@@ -8,18 +8,13 @@ import (
 )
 
 func NewMySqlDatabase(cfg Mysql.Config) (*gorm.DB, error) {
-
-
 	db,err:=gorm.Open(mysql.Open(cfg.FormatDSN()),&gorm.Config{
 		PrepareStmt: true,
 	
 	})
-
 	if err!=nil{
 		return nil,err
 	}
-
-	
 	//migration of the models
 	db.AutoMigrate(&models.User{},&models.UserAddress{},&models.Category{},&models.Product{},&models.ProductVariation{},&models.VariationAttribute{},&models.ProductImage{},&models.VariantImage{})
 	return db, nil

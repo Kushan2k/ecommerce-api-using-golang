@@ -3,9 +3,6 @@ package utils
 import (
 	"github.com/gofiber/fiber/v2"
 )
-
-
-
 func WriteJSON(c *fiber.Ctx, status int,v any) error {
 	c.Status(status)
 	c.Set("Content-Type", "application/json")

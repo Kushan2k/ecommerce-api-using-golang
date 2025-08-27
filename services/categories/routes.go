@@ -1,3 +1,4 @@
+// category service
 package categories
 
 import (
